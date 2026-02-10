@@ -65,7 +65,7 @@ class E3NN(Network):
         #print(x)
         #print(x.shape)
         #print(torch_scatter.scatter_mean(x, batch, dim=0).shape)
-        x -= torch.mean(x, axis=0)
+        #x -= torch.mean(x, axis=0)
         #print(x.shape)
         #x -= torch.mean(x, axis=0)
         #x=x.reshape(batch_size,-1,9)
@@ -147,8 +147,10 @@ class E3NN(Network):
             wall = end_time - start_time
 
             if (step+1)%chkpt == 0:
-                print(f"Iteration {step+1:5d}    batch {j+1:5d} / {len(dataloader_train):5d}   " +
-                      f"epoch loss = {loss_cum/len(dataloader_train):.4e}, bec. = {loss_bec_cum/len(dataloader_train):.4e}")
+                print(f'\ntraining loss = {loss_train:.4e}\n')
+                print(f'validation loss = {loss_valid:.4e}\n')
+                #print(f"Iteration {step+1:5d}    batch {j+1:5d} / {len(dataloader_train):5d}   " +
+                #      f"epoch loss = {loss_cum/len(dataloader_train):.4e}, bec. = {loss_bec_cum/len(dataloader_train):.4e}")
 
                 loss_valid = self.checkpoint(dataloader_valid, device)
                 loss_train = self.checkpoint(dataloader_train, device)
