@@ -18,7 +18,7 @@ def read_vasp_epsilon(xmlfile: str):
     """
     import xml.etree.ElementTree as ET
     root = ET.parse(xmlfile).getroot()
-    array_vectors = root.findall("./calculation/*[@name='epsilon']/v")
+    array_vectors = root.findall("./calculation/*[@name='epsilon_scf']/v")
     diel = np.array([np.fromstring(element.text, sep=' ') for element in array_vectors])
     return diel
 
