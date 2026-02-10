@@ -23,20 +23,19 @@ def read_vasp_epsilon(xmlfile: str):
     return diel
 
 #selection default to not break existing code
-def ase_db_to_df(db_file, selection='gap>0,converged=True', save=False):
+def ase_db_to_df(db_file, save=False):
     from ase.db import connect
     import pandas as pd
     db = connect(db_file)
-    all_atoms = [row.toatoms() for row in db.select(selection)]
-    all_bec = [row.data.bec for row in db.select(selection)]
-    all_diel = [row.data.diel for row in db.select(selection)]
-    energy = [row.energy for row in db.select(selection)]
-    forces = [row.forces for row in db.select(selection)]
+    all_atoms = [row.toatoms() for row in db.select()]
+    all_becder = [row.data.becder for row in db.select()]
+    #all_diel = [row.data.diel for row in db.select(selection)]
+    #energy = [row.energy for row in db.select()]
+    #forces = [row.forces for row in db.select()]
     df = pd.DataFrame(data={'structure': all_atoms, 
-                            'diel': all_diel,
-                            'bec': all_bec,
-                            'energy': energy,
-                            'forces': forces,
+                            'becder': all_becder,
+                            #'energy': energy,
+                            #'forces': forces,
                            },
                     )
     if save:
