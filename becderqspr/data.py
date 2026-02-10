@@ -1,6 +1,6 @@
 #currently an empty file for loading, wrangling data
 import pandas as pd
-from becqsdr.io import ase_db_to_df
+from becderqspr.io import ase_db_to_df
 import numpy as np
 
 def load_db(filename, selection):
