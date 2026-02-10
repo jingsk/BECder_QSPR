@@ -2,7 +2,8 @@
 #more to come
 import torch
 import time
-from becqsdr.e3nn import Network
+from becderqspr.e3nn import Network
+from e3nn.io import CartesianTensor
 import cmcrameri.cm as cm
 import torch.nn as nn
 import pandas as pd
@@ -13,7 +14,7 @@ class E3NN(Network):
          
         kwargs = {'reduce_output': False,
                   'irreps_in': str(emb_dim)+"x0e",
-                  'irreps_out': "1x0e+1x1e+1x2e",
+                  'irreps_out': str(CartesianTensor("ijk=ikj")),
                   #'irreps_out': str(9) + "x0e",
                   'irreps_node_attr': str(emb_dim)+"x0e",
                   'layers': num_layers,
