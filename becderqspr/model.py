@@ -36,7 +36,7 @@ class E3NN(Network):
         self.max_radius = max_radius
         self.num_neighbors = num_neighbors
         
-        self.model_name = 'bec_e' + str(emb_dim) + '_l' + str(num_layers)
+        self.model_name = 'becder_e' + str(emb_dim) + '_l' + str(num_layers)
         
         # embedding
         self.emb_x = nn.Sequential(
@@ -76,7 +76,7 @@ class E3NN(Network):
         return sum(p.numel() for p in self.parameters() if p.requires_grad)
     
 
-    def loss_bec(self, b_pred, b_true):
+    def loss_b(self, b_pred, b_true):
         b_pred=b_pred.reshape(b_true.shape)
         # print(b_pred.shape)
         # print(b_true.shape)
@@ -97,11 +97,11 @@ class E3NN(Network):
         for j, d in enumerate(dataloader):
             d.to(device)
             d.pos.requires_grad = True
-            y_bec = self.forward(d)
+            y_b = self.forward(d)
             #print(y_bec.shape)
-            loss_bec = self.loss_bec(y_bec, d.b).cpu()
+            loss_b = self.loss_b(y_b, d.b).cpu()
             #loss_raman = self.loss_raman(y_raman_pred, d.raman).cpu()
-            loss = loss_bec
+            loss = loss_b
             
             loss_cum += loss.detach().item()
                 
@@ -114,25 +114,25 @@ class E3NN(Network):
         for step in range(max_iter):
             self.train()
 
-            loss_bec = 0.
-            loss_bec_cum = 0.
+            loss_b = 0.
+            loss_b_cum = 0.
             loss_cum = 0.
             start_time = time.time()
 
             for j, d in enumerate(dataloader_train):
                 d.to(device)
                 d.pos.requires_grad = True
-                y_bec = self.forward(d)
+                y_b = self.forward(d)
                 #print(y_bec.shape)
                 
-                loss_bec = self.loss_bec(y_bec, d.b).cpu()
+                loss_b = self.loss_b(y_b, d.b).cpu()
                 #loss_raman = self.loss_raman(y_raman_pred, d.raman).cpu()
-                loss = loss_bec #+ loss_raman
+                loss = loss_b #+ loss_raman
                 
                 print(f"Iteration {step+1:5d}    batch {j+1:5d} / {len(dataloader_train):5d}   " +
-                      f"batch loss = {loss.data:.4e}, bec. = {loss_bec.data:.4e}", end="\r", flush=True)
+                      f"batch loss = {loss.data:.4e}, becder. = {loss_b.data:.4e}", end="\r", flush=True)
 
-                loss_bec_cum += loss_bec.detach().item()
+                loss_b_cum += loss_b.detach().item()
                 #loss_raman_cum += loss_raman.detach().item()
                 loss_cum += loss.detach().item()
                 
@@ -152,7 +152,7 @@ class E3NN(Network):
                 print(f'\ntraining loss = {loss_train:.4e}\n')
                 print(f'validation loss = {loss_valid:.4e}\n')
                 # print(f"Iteration {step+1:5d}    batch {j+1:5d} / {len(dataloader_train):5d}   " +
-                #       f"epoch loss = {loss_cum/len(dataloader_train):.4e}, bec. = {loss_bec_cum/len(dataloader_train):.4e}")
+                #       f"epoch loss = {loss_cum/len(dataloader_train):.4e}, becder. = {loss_b_cum/len(dataloader_train):.4e}")
 
                 history.append({
                     'step': step + s0,
@@ -190,10 +190,10 @@ def visualize_output(entry: pd.Series, enn: E3NN, device: str):
     idx_to_plt = [20, 21, 22, 23] 
     x = tg.data.Batch.from_data_list([entry.data])
     x.pos.requires_grad = True
-    bec_pred = enn(x.to(device))
-    bec_pred = CartesianTensor("ij=ij").to_cartesian(bec_pred.detach().cpu())
-    bec_pred = bec_pred.reshape(-1,3,3)
-    bec_real = entry.bec.reshape(-1,3,3)
+    b_pred = enn(x.to(device))
+    b_pred = CartesianTensor("ij=ij").to_cartesian(b_pred.detach().cpu())
+    b_pred = b_pred.reshape(-1,3,3)
+    b_real = entry.becder.reshape(-1,3,3)
     
     fig, axs = plt.subplots(len(idx_to_plt) * 1,3, 
                            figsize=(4.5,2 * len(idx_to_plt)), 
@@ -201,20 +201,20 @@ def visualize_output(entry: pd.Series, enn: E3NN, device: str):
                           )
     plt.subplots_adjust(wspace=0.1)
     
-    vmax = np.abs(bec_real[idx_to_plt]).max()
+    vmax = np.abs(b_real[idx_to_plt]).max()
     norm = plt.Normalize(vmin=-vmax, vmax=vmax)
     
     sm = mpl.cm.ScalarMappable(cmap=cm.vik_r, norm=norm)
     
     for i, idx in enumerate(idx_to_plt):
     
-        axs[i, 0].imshow(bec_real[idx], cmap=sm.cmap, norm=sm.norm)
-        axs[i, 1].imshow(bec_pred[idx], cmap=sm.cmap, norm=sm.norm)
+        axs[i, 0].imshow(b_real[idx], cmap=sm.cmap, norm=sm.norm)
+        axs[i, 1].imshow(b_pred[idx], cmap=sm.cmap, norm=sm.norm)
         axs[i, 0].set_xticks([]); axs[i, 1].set_xticks([])
         axs[i, 0].set_yticks([]); axs[i, 1].set_yticks([])
         axs[i,2].set_visible(False)
-        print_text(axs[i, 0], bec_real[idx])
-        print_text(axs[i, 1], bec_pred[idx]-bec_real[idx])
+        print_text(axs[i, 0], b_real[idx])
+        print_text(axs[i, 1], b_pred[idx]-b_real[idx])
     
     #plot format
     axs[0, 0].set_title('True (red: value)')
@@ -222,5 +222,5 @@ def visualize_output(entry: pd.Series, enn: E3NN, device: str):
     axs[0, 2].set_visible(True)
     plt.colorbar(sm, cax=axs[0, 2]);
     plt.tight_layout()
-    fig.savefig('./images/example_bec_test_iloc0.png', bbox_inches='tight', transparent=False)
+    fig.savefig('./images/example_becder_test_iloc0.png', bbox_inches='tight', transparent=False)
     
