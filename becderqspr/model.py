@@ -87,8 +87,13 @@ class E3NN(Network):
     
     def loss_b_node(self, b_pred, b_true):
         b_true=b_true.reshape(b_pred.shape)
+<<<<<<< HEAD
         b_pred_flat=b_pred.view([-1,*list(b_pred.shape[-2:])])
         b_true_flat=b_true.view([-1,*list(b_true.shape[-2:])])
+=======
+        b_pred_flat=b_pred.view([-1,*list(b_pred.shape[-1:])])
+        b_true_flat=b_true.view([-1,*list(b_true.shape[-1:])])
+>>>>>>> 578c0fd (update loss)
         # print(b_pred.shape)
         # print(b_true.shape)
         # print(b_pred.shape)
