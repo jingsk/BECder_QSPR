@@ -3,7 +3,7 @@ import torch
 import torch_geometric as tg
 from e3nn.io import CartesianTensor
 from e3nn.o3 import ReducedTensorProducts
-from becderqsdr.model import E3NN
+from becderqspr.model import E3NN
 # crystal structure data
 from ase import Atom
 from ase.neighborlist import neighbor_list
