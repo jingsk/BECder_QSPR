@@ -10,7 +10,7 @@ import pandas as pd
 import numpy as np
 
 class E3NN(Network):
-    def __init__(self, in_dim, emb_dim, num_layers, max_radius, num_neighbors, lmax=3, radial_layers=1, radial_neurons=100, loss_type='graph'):
+    def __init__(self, in_dim, emb_dim, num_layers, max_radius, num_neighbors, lmax=3, radial_layers=1, radial_neurons=100, loss_type='node'):
          
         kwargs = {'reduce_output': False,
                   'irreps_in': str(emb_dim)+"x0e",
@@ -35,7 +35,8 @@ class E3NN(Network):
         self.num_layers = num_layers
         self.max_radius = max_radius
         self.num_neighbors = num_neighbors
-        self.loss_type = loss_type
+        assert loss_type == 'node', "Only node level loss is supported now."
+        self.loss_type = 'node'
         self.model_name = 'becder_e' + str(emb_dim) + '_l' + str(num_layers)
         
         # embedding
@@ -76,7 +77,7 @@ class E3NN(Network):
         return sum(p.numel() for p in self.parameters() if p.requires_grad)
     
 
-    def loss_b_graph(self, b_pred, b_true):
+    def loss_b_node(self, b_pred, b_true):
         b_pred=b_pred.reshape(b_true.shape)
         # print(b_pred.shape)
         # print(b_true.shape)
@@ -84,22 +85,7 @@ class E3NN(Network):
         #return nn.MSELoss()(b_pred[-1,-4:], b_true[:,-4:])
         return nn.MSELoss()(b_pred, b_true)
 
-    
-    def loss_b_node(self, b_pred, b_true):
-        b_true=b_true.reshape(b_pred.shape)
-        b_pred_flat=b_pred.view([-1,*list(b_pred.shape[-2:])])
-        b_true_flat=b_true.view([-1,*list(b_true.shape[-2:])])
-        # print(b_pred.shape)
-        # print(b_true.shape)
-        # print(b_pred.shape)
-        # print(b_true.shape)
-        #b_pred.reshape(b_true.shape)
-        #return nn.MSELoss()(b_pred[-1,-4:], b_true[:,-4:])
-        return nn.MSELoss()(b_pred_flat, b_true_flat)
-
     def compute_loss_b(self, pred, target, loss_type):
-        if loss_type == "graph":
-            return self.loss_b_graph(pred, target)
         elif loss_type == "node":
             return self.loss_b_node(pred, target)
     # def loss_raman(self, y_pred, y_true):
