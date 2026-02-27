@@ -86,7 +86,7 @@ class E3NN(Network):
         return nn.MSELoss()(b_pred, b_true)
 
     def compute_loss_b(self, pred, target, loss_type):
-        elif loss_type == "node":
+        if loss_type == "node":
             return self.loss_b_node(pred, target)
     # def loss_raman(self, y_pred, y_true):
     #     return nn.MSELoss()(y_pred, y_true)
